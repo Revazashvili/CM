@@ -39,7 +39,7 @@ namespace API
                     var context = serviceProvider.GetService<ApplicationDbContext>();
                     if (context!.Database.IsSqlServer())
                         await context.Database.MigrateAsync();
-                    // Seed database here
+                    await ApplicationDbContextSeed.SeedSampleDataAsync(context);
                 }
                 catch (Exception e)
                 {

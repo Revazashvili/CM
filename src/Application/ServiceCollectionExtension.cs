@@ -14,19 +14,31 @@ namespace Application
     public static class ServiceCollectionExtension
     {
         /// <summary>
-        /// Injects application dependencies into dependency injection container
+        /// Injects application dependencies into dependency injection container.
         /// </summary>
-        /// <param name="services"><see cref="IServiceCollection"/> interface</param>
+        /// <param name="services"><see cref="IServiceCollection"/> interface.</param>
         public static void AddApplication(this IServiceCollection services)
         {
-            services.AddSingleton(TypeAdapterConfig.GlobalSettings);
-            services.AddScoped<IMapper, ServiceMapper>();
+            services.AddMapper();
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
             services.AddMediatR(Assembly.GetExecutingAssembly());
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehaviour<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(TaskCanceledExceptionBehaviour<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(PerformanceBehaviour<,>));
+        }
+
+        /// <summary>
+        /// Configures mapper settings and injects services into dependency injection container.
+        /// </summary>
+        /// <param name="services"><see cref="IServiceCollection"/> interface.</param>
+        private static void AddMapper(this IServiceCollection services)
+        {
+            var typeAdapterConfig = new TypeAdapterConfig();
+            typeAdapterConfig.EnableImmutableMapping();
+            typeAdapterConfig.EnableJsonMapping();
+            services.AddSingleton(typeAdapterConfig);
+            services.AddScoped<IMapper, ServiceMapper>();
         }
     }
 }
