@@ -2,9 +2,8 @@
 
 namespace Application.Common.DTOs.Rates
 {
-    public class RateDto
+    public class CreateRateDto
     {
-        public int Id { get; set; }
         public string From { get; set; }
         public string To { get; set; }
         public double Sell { get; set; }

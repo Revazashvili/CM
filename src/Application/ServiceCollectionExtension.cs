@@ -1,5 +1,7 @@
 using System.Reflection;
 using Application.Common.Behaviours;
+using Application.Common.DTOs.Rates;
+using Domain.Entities;
 using FluentValidation;
 using Mapster;
 using MapsterMapper;
@@ -37,6 +39,13 @@ namespace Application
             var typeAdapterConfig = new TypeAdapterConfig();
             typeAdapterConfig.EnableImmutableMapping();
             typeAdapterConfig.EnableJsonMapping();
+            // mapping config for Rate to RateDto
+            typeAdapterConfig.ForType<Rate,RateDto>()
+                .Map(dest => dest.From,
+                    src => src.From.Code)
+                .Map(dest => dest.To,
+                    src => src.To.Code);
+            
             services.AddSingleton(typeAdapterConfig);
             services.AddScoped<IMapper, ServiceMapper>();
         }

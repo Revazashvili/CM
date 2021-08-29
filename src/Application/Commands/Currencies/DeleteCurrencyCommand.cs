@@ -26,7 +26,7 @@ namespace Application.Commands.Currencies
                 if (currency is null) return Response.Fail<bool>("Currency with provided id doesn't exists.");
                 _context.Currencies.Remove(currency);
                 await _context.SaveChangesAsync(cancellationToken);
-                return Response.Success<bool>(true);
+                return Response.Success(true);
             }
             catch (Exception e)
             {
