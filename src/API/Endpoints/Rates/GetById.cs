@@ -19,7 +19,6 @@ namespace API.Endpoints.Rates
         .WithResponse<IResponse<RateDto>>
     {
         private readonly IMediator _mediator;
-
         public GetById(IMediator mediator) => _mediator = mediator;
 
         [HttpGet]
