@@ -33,6 +33,7 @@ namespace Infrastructure
             services.AddScoped<IApplicationDbContext>(provider => provider.GetService<ApplicationDbContext>()!);
             services.AddScoped<ICurrencyCalculator, CurrencyCalculator>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IRateService, RateService>();
         }
     }
 }

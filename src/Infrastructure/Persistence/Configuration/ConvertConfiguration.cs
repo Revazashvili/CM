@@ -20,7 +20,7 @@ namespace Infrastructure.Persistence.Configuration
                 .IsRequired();
             builder.HasOne(x=>x.Converter)
                 .WithMany()
-                .IsRequired();
+                .IsRequired(false);
         }
     }
 }

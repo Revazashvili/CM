@@ -12,8 +12,17 @@ namespace Domain.Entities
 
         public Currency From { get; set; }
         public Currency To { get; set; }
+        /// <summary>
+        /// Gets or sets currency sell value
+        /// </summary>
         public double Sell { get; set; }
+        /// <summary>
+        /// Gets or sets currency buy value
+        /// </summary>
         public double Buy { get; set; }
+        /// <summary>
+        /// Gets or sets currency active date value
+        /// </summary>
         public DateTime Date { get; set; }
     }
 }

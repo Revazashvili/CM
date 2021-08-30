@@ -1,14 +1,7 @@
 ﻿namespace Application.Common.DTOs.Users
 {
-    public class CreateUserDto
+    public class UserDto
     {
-        public CreateUserDto(string pin, string firstName, string lastName)
-        {
-            Pin = pin;
-            FirstName = firstName;
-            LastName = lastName;
-        }
-
         /// <summary>
         /// Gets or sets user private identifier
         /// </summary>
