@@ -7,7 +7,7 @@ namespace Infrastructure.Persistence
     {
         public static async Task SeedSampleDataAsync(ApplicationDbContext context)
         {
-            await context.Currencies.AddRangeAsync(new Currency("EUR", "Euro", "ევრო"),
+            await context.Currencies.AddRangeAsync(new Currency("EUR", "ევრო","Euro"),
                 new Currency("USD", "აშშ დოლარი", "United States dollar"),
                 new Currency("GBP", "დიდი ბრიტანეთის გირვანქა სტერლინგი", "British pound"),
                 new Currency("CNY", "ჩინური იუანი", "Chinese yuan"),

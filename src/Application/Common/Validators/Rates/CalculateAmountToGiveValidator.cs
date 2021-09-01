@@ -6,14 +6,14 @@ namespace Application.Common.Validators.Rates
 {
     public class CalculateAmountToGiveValidator : AbstractValidator<CalculateAmountToGive>
     {
-        public CalculateAmountToGiveValidator(IRateService rateService)
+        public CalculateAmountToGiveValidator(ICurrencyService currencyService)
         {
             RuleFor(x => x.From)
                 .NotEmpty().NotNull()
-                .MustAsync(rateService.ExistsAsync);
+                .MustAsync(currencyService.ExistsAsync);
             RuleFor(x => x.To)
                 .NotEmpty().NotNull()
-                .MustAsync(rateService.ExistsAsync);
+                .MustAsync(currencyService.ExistsAsync);
             RuleFor(x => x.ReceivableAmount)
                 .NotNull().GreaterThan(0);
         }

@@ -6,7 +6,7 @@ namespace Application.Common.Interfaces
     /// <summary>
     /// Service for manipulating rates.
     /// </summary>
-    public interface IRateService
+    public interface ICurrencyService
     {
         /// <summary>
         /// Asynchronously determines whether exists element with given currency code or not.

@@ -1,0 +1,178 @@
+﻿@page "/rates"
+
+@inject IRateClient RateClient
+@inject ICurrencyClient CurrencyClient
+
+<br>
+<br>
+
+@if (_rates is not null)
+{
+    <h3>კურსები</h3>
+    <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" FilterMode="FilterMode.Advanced" PageSize="10" AllowPaging="true" AllowSorting="true" 
+                    Data="@_rates" TItem="RateDto" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or" EmptyText="ჩანაწერი არ მოიძებნა"
+                    RowDoubleClick="RowDoubleClick">
+        <Columns>
+            <RadzenDataGridColumn TItem="RateDto" Property="From" Title="From" Reorderable="true" />
+            <RadzenDataGridColumn TItem="RateDto" Property="To" Title="To" Reorderable="true"/>
+            <RadzenDataGridColumn TItem="RateDto" Property="Sell" Title="გაყიდვა" Reorderable="true"/>
+            <RadzenDataGridColumn TItem="RateDto" Property="Buy" Title="ყიდვა" Reorderable="true" />
+            <RadzenDataGridColumn TItem="RateDto" Property="Date" Title="თარიღი" Reorderable="true" FormatString="{0:d}" />
+        </Columns>
+    </RadzenDataGrid>
+
+    <br>
+    <br>
+
+    <RadzenTemplateForm Data="_rate" Submit="@( async (RateDto rateDto) => { await Submit(rateDto);})">
+        <div class="row">
+            <div class="col-md-6">
+                <RadzenFieldset Text="კურსის ინფორმაცია">
+                    <div class="row">
+                        <div class="col-md-4 align-items-center d-flex">
+                            <RadzenLabel Text="From" />
+                        </div>
+                        <div class="col-md-8">
+                            <RadzenDropDown @bind-Value="_rate.From" AllowClear="true" Data="@_currencies" style="width: 100%;" 
+                                             TextProperty="Code" ValueProperty="Code" Name="From" Change="OnFromChanged">
+                                </RadzenDropDown>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 align-items-center d-flex">
+                            <RadzenLabel Text="To" />
+                        </div>
+                        <div class="col-md-8">
+                            <RadzenDropDown @bind-Value="_rate.To" AllowClear="true" Data="@_currencies" style="width: 100%;" 
+                                             TextProperty="Code" ValueProperty="Code" Name="To" Change="OnToChanged">
+                                </RadzenDropDown>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 align-items-center d-flex">
+                            <RadzenLabel Text="გაყიდვა" />
+                        </div>
+                        <div class="col-md-8">
+                            <RadzenNumeric style="width: 100%;" @bind-Value="@_rate.Sell" Name="Sell" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 align-items-center d-flex">
+                            <RadzenLabel Text="ყიდვა" />
+                        </div>
+                        <div class="col-md-8">
+                            <RadzenNumeric style="width: 100%;" @bind-Value="@_rate.Buy" Name="Buy" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 align-items-center d-flex">
+                            <RadzenLabel Text="თარიღი" />
+                        </div>
+                        <div class="col-md-8">
+                            <RadzenDatePicker @bind-Value=@_rate.Date DateFormat="d" Change="OnChange" />
+                        </div>
+                    </div>
+                </RadzenFieldset>
+            </div>
+        </div>
+    
+        <div class="row justify-content-center">
+            <div class="col-md-12 d-flex align-items-end justify-content-center" style="margin-top: 16px;">
+                <RadzenButton ButtonType="ButtonType.Submit" Icon="save" Text="შენახვა" />
+                <RadzenButton ButtonStyle="ButtonStyle.Light" Icon="cancel" style="display: inline-block; margin-left: 10px;" Text="გაუქმება" Click="Cancel" />
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete_forever" style="display: inline-block; margin-left: 10px;" Text="წაშლა" 
+                              Click="Delete" Visible="@(_rate.Id > 0)"/>
+            </div>
+        </div>
+    </RadzenTemplateForm>
+    
+    }
+else
+{
+    <h1>Loading...</h1>
+}
+
+
+@code {
+    List<RateDto> _rates;
+    RateDto _rate;
+    List<CurrencyDto> _currencies;
+    protected override async Task OnInitializedAsync()
+    {
+        _rate = new RateDto();
+        await LoadRates();
+        var currencyResult = await CurrencyClient.GetAsync();
+        if (currencyResult.Succeeded)
+        {
+            _currencies = currencyResult.Data.ToList();
+        }
+    }
+
+    private async Task LoadRates()
+    {
+        var result = await RateClient.GetAsync();
+        if (result.Succeeded)
+        {
+            _rates = result.Data.ToList();
+        }
+    }
+
+    void RowDoubleClick(DataGridRowMouseEventArgs<RateDto> eventArgs) => _rate = eventArgs.Data;
+
+    void OnFromChanged(object value)
+    {
+        var from = value.ToString();
+        if (_rate.To != from)
+            _rate.From = from;
+    }
+    
+    void OnToChanged(object value)
+    {
+        var to = value.ToString();
+        if (_rate.From != to)
+            _rate.To = to;
+    }
+    
+    void OnChange(DateTime? value)
+    {
+        if (value.HasValue)
+            if (value.Value > DateTime.Now)
+                _rate.Date = value.Value;
+    }
+
+    async Task Submit(RateDto rateDto)
+    {
+        Int32IResponse response;
+        if (rateDto.Id > 0)
+            response = await RateClient.UpdateAsync(new UpdateRateDto
+            {
+                Id = rateDto.Id,
+                Buy = rateDto.Buy,
+                Sell = rateDto.Sell
+            });
+        response = await RateClient.CreateAsync(new CreateRateDto
+        {
+            Buy = rateDto.Buy,
+            Sell = rateDto.Sell,
+            Date = DateTimeOffset.Now,
+            From = rateDto.From,
+            To = rateDto.To
+        });
+        if (response.Succeeded)
+            await LoadRates();
+        StateHasChanged();
+        // notification if not succeeded
+    }
+
+    async Task Delete()
+    {
+        var response = await RateClient.DeleteAsync(_rate.Id);
+        if (response.Succeeded)
+        {
+            await LoadRates();
+            StateHasChanged();
+        }
+    }
+    
+    void Cancel() => _rate = null;
+}

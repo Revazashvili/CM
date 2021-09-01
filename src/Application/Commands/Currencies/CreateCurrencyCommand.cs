@@ -6,6 +6,7 @@ using Application.Common.Models;
 using Application.Common.Wrappers;
 using Domain.Entities;
 using MapsterMapper;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Commands.Currencies
 {

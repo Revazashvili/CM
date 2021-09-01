@@ -6,14 +6,14 @@ namespace Application.Common.Validators.Rates
 {
     public class GetBuyRateDtoValidator : AbstractValidator<GetBuyRateDto>
     {
-        public GetBuyRateDtoValidator(IRateService rateService)
+        public GetBuyRateDtoValidator(ICurrencyService currencyService)
         {
             RuleFor(x => x.From)
                 .NotEmpty().NotNull()
-                .MustAsync(rateService.ExistsAsync);
+                .MustAsync(currencyService.ExistsAsync);
             RuleFor(x => x.To)
                 .NotEmpty().NotNull()
-                .MustAsync(rateService.ExistsAsync);
+                .MustAsync(currencyService.ExistsAsync);
         }
     }
 }

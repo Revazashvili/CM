@@ -1,7 +1,116 @@
 ﻿@page "/"
+@inject ICurrencyClient CurrencyClient
 
-<h1>Hello, world!</h1>
+<br>
+<br>
 
-Welcome to your new app.
+@if (_currencies is not null && _currencies.Any())
+{
+    <h3>ვალუტები</h3>
+    <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" FilterMode="FilterMode.Advanced" PageSize="10" AllowPaging="true" AllowSorting="true" 
+                    Data="@_currencies" TItem="CurrencyDto" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or" EmptyText="ჩანაწერი არ მოიძებნა"
+                    RowDoubleClick="RowDoubleClick">
+        <Columns>
+            <RadzenDataGridColumn TItem="CurrencyDto" Property="Code" Title="კოდი" Reorderable="true" />
+            <RadzenDataGridColumn TItem="CurrencyDto" Property="Name" Title="დასახელება" Reorderable="true"/>
+            <RadzenDataGridColumn TItem="CurrencyDto" Property="LatinName" Title="დასახელება ლათინურად" Reorderable="true"/>
+            <RadzenDataGridColumn TItem="CurrencyDto" Property="Status" Title="სტატუსი" Reorderable="true">
+                <Template Context="data">
+                    @(data.Status == CurrencyStatus._1 ? "აქტიური" : "პასიური")
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
 
-<SurveyPrompt Title="How is Blazor working for you?"/>
+    <br>
+    <br>
+
+    <RadzenTemplateForm Data="_currency" Submit="@( async (CurrencyDto currencyDto) => { await Submit(currencyDto);})">
+        <div class="row">
+            <div class="col-md-6">
+                <RadzenFieldset Text="ვალუტის ინფორმაცია">
+                    <div class="row">
+                        <div class="col-md-4 align-items-center d-flex">
+                            <RadzenLabel Text="კოდი" />
+                        </div>
+                        <div class="col-md-8">
+                            <RadzenTextBox style="width: 100%;" Value="@_currency.Code" Name="Code" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 align-items-center d-flex">
+                            <RadzenLabel Text="დასახელება" />
+                        </div>
+                        <div class="col-md-8">
+                            <RadzenTextBox style="width: 100%;" Value="@_currency.Name" Name="Name" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 align-items-center d-flex">
+                            <RadzenLabel Text="დასახელება ლათინურად" />
+                        </div>
+                        <div class="col-md-8">
+                            <RadzenTextBox style="width: 100%;" Value="@_currency.LatinName" Name="LatinName" />
+                        </div>
+                    </div>
+                </RadzenFieldset>
+            </div>
+        </div>
+    
+        <div class="row justify-content-center">
+            <div class="col-md-12 d-flex align-items-end justify-content-center" style="margin-top: 16px;">
+                <RadzenButton ButtonType="ButtonType.Submit" Icon="save" Text="შენახვა" />
+                <RadzenButton ButtonStyle="ButtonStyle.Light" Icon="cancel" style="display: inline-block; margin-left: 10px;" Text="გაუქმება" Click="Cancel" />
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete_forever" style="display: inline-block; margin-left: 10px;" Text="წაშლა" 
+                              Click="Delete" Visible="@(_currencies.Any(x => x.Code.ToLower() == _currency?.Code?.ToLower()))"/>
+            </div>
+        </div>
+    </RadzenTemplateForm>
+    
+    }
+else
+{
+    <h1>Loading...</h1>
+}
+
+@code {
+    List<CurrencyDto> _currencies;
+    CurrencyDto _currency;
+    protected override async Task OnInitializedAsync()
+    {
+        _currency = new CurrencyDto();
+        await LoadCurrencies();
+    }
+
+    private async Task LoadCurrencies()
+    {
+        var result = await CurrencyClient.GetAsync();
+        if (result.Succeeded)
+            _currencies = result.Data.ToList();
+    }
+
+    void RowDoubleClick(DataGridRowMouseEventArgs<CurrencyDto> eventArgs) => _currency = eventArgs.Data;
+
+    async Task Submit(CurrencyDto currencyDto)
+    {
+        StringIResponse response;
+        if (_currencies.Any(x => x.Code.ToLower() == currencyDto.Code.ToLower()))
+            response = await CurrencyClient.UpdateAsync(currencyDto);
+        response = await CurrencyClient.CreateAsync(currencyDto);
+        if (response.Succeeded)
+            await LoadCurrencies();
+        StateHasChanged();
+        // notification if not succeeded
+    }
+
+    async Task Delete()
+    {
+        var response = await CurrencyClient.DeleteAsync(_currency.Code);
+        if (response.Succeeded)
+        {
+            await LoadCurrencies();
+            StateHasChanged();
+        }
+    }
+    void Cancel() => _currency = null;
+}

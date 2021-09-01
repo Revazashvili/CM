@@ -24,6 +24,11 @@ namespace Application.Commands.Rates
         {
             var from = await _context.Currencies.FirstOrDefaultAsync(x => x.Code == request.CreateRateDto.From,cancellationToken);
             var to = await _context.Currencies.FirstOrDefaultAsync(x => x.Code == request.CreateRateDto.To,cancellationToken);
+            if (await _context.Rates.AnyAsync(x =>
+                x.From.Code == from.Code && x.To.Code == to.Code && x.Date == request.CreateRateDto.Date, cancellationToken: cancellationToken))
+            {
+                return Response.Fail<int>("Already exists such rate.");
+            }
             var rate = new Rate(from, to, request.CreateRateDto.Buy, request.CreateRateDto.Sell,
                 request.CreateRateDto.Date);
             var entity = (await _context.Rates.AddAsync(rate, cancellationToken)).Entity;

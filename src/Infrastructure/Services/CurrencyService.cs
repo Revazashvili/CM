@@ -5,14 +5,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Services
 {
-    /// <inheritdoc cref="IRateService"/>
-    public class RateService : IRateService
+    /// <inheritdoc cref="ICurrencyService"/>
+    public class CurrencyService : ICurrencyService
     {
         private readonly IApplicationDbContext _context;
 
-        public RateService(IApplicationDbContext context) => _context = context;
+        public CurrencyService(IApplicationDbContext context) => _context = context;
 
         public async Task<bool> ExistsAsync(string code, CancellationToken cancellationToken) =>
-            await _context.Rates.AnyAsync(x => x.From.Code == code, cancellationToken);
+            await _context.Currencies.AnyAsync(x => x.Code == code, cancellationToken);
     }
 }

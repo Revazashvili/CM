@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CurrencyClient;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
@@ -28,7 +29,12 @@ namespace UI
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddSingleton<WeatherForecastService>();
+            services.AddHttpClient("CurrencyClient", client => client.BaseAddress = new Uri("https://localhost:5001/"));
+            services.AddScoped<ICurrencyClient, CurrencyClient.CurrencyClient>();
+            services.AddScoped<IRateClient, RateClient>();
+            services.AddScoped<IUserClient, UserClient>();
+            services.AddScoped<IReportClient, ReportClient>();
+            services.AddScoped<IConvertClient, ConvertClient>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
