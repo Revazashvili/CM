@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Common.DTOs.Converts;
@@ -17,13 +18,18 @@ namespace Application.Commands.Converts
     public class CreateConvertCommandHandler : IHandlerWrapper<CreateConvertCommand,bool>
     {
         private readonly double _maxConvertValue;
+        private readonly double _hierarchyConvertLimit;
         private readonly IApplicationDbContext _context;
         private readonly IUserService _userService;
 
         public CreateConvertCommandHandler(IApplicationDbContext context, IUserService userService,
-            IConfiguration configuration) =>
-            (_context, _userService, _maxConvertValue) = (context, userService,
-                configuration.GetSection("MaxConvertAmount").Get<double>());
+            IConfiguration configuration)
+        {
+            _context = context;
+            _userService = userService;
+            _maxConvertValue = configuration.GetSection("MaxConvertAmount").Get<double>();
+            _hierarchyConvertLimit = configuration.GetSection("HierarchyConvertLimit").Get<double>();
+        }
 
         public async Task<IResponse<bool>> Handle(CreateConvertCommand request, CancellationToken cancellationToken)
         {
@@ -39,7 +45,9 @@ namespace Application.Commands.Converts
                 var user = await _userService.FirstOrDefaultAsync(x=>x.Pin == convertDto.ConverterPin, cancellationToken);
                 if (user is not null)
                 {
-                    // არის თუ არა ტიპის, მისი რეკომენდატორების ან ვინც ამ ტიპმა რეკომენდაცია გაუწია დღის მანძილზე დაკონვერტირებული თანხის ექვივალენტი ლარში 100 000-ზე მეტი. 
+                    var totalConvertedMoneyAmount = await CalculateFullHierarchyConvertedMoney(user.Pin);
+                    if (totalConvertedMoneyAmount > _hierarchyConvertLimit)
+                        return Response.Fail<bool>("Error occured while converting.");
                 }
 
                 user = await _userService.CreateAsync(
@@ -54,6 +62,31 @@ namespace Application.Commands.Converts
             {
                 return Response.Fail<bool>(e.Message);
             }
+        }
+
+        private async ValueTask<double?> CalculateFullHierarchyConvertedMoney(string userPin)
+        {
+            var converts = await _context.Converts
+                .Include(x=>x.From)
+                .AsNoTracking()
+                .Where(x => (x.Converter.Pin.Equals(userPin) || x.RecommenderPin.Equals(userPin)) && x.Time.Date == DateTime.Now.Date)
+                .ToListAsync();
+            if (converts is null && !converts!.Any())
+                return null;
+
+            var totalAmount = 0.0;
+            foreach (var convert in converts)
+            {
+                var rate = await _context.Rates
+                    .FirstOrDefaultAsync(x =>
+                        x.From.Code == convert.From.Code && x.To.Code == "GEL" && x.Date.Date == DateTime.Now.Date);
+                if (rate is not null)
+                {
+                    totalAmount += convert.Amount * rate.Buy;
+                }
+            }
+
+            return totalAmount;
         }
     }
 }

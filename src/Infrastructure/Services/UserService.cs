@@ -18,6 +18,7 @@ namespace Infrastructure.Services
         public async Task<User?> FirstOrDefaultAsync(Expression<Func<User, bool>> predicate,
             CancellationToken cancellationToken) => await _context
             .Users
+            .AsNoTracking()
             .FirstOrDefaultAsync(predicate, cancellationToken);
 
         public async ValueTask<User?> CreateAsync(CreateUserDto createUserDto,CancellationToken cancellationToken)

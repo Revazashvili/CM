@@ -24,7 +24,9 @@ namespace Application.Queries.Currencies
 
         public async Task<IResponse<CurrencyDto>> Handle(GetCurrencyQuery request, CancellationToken cancellationToken)
         {
-            var currency = await _context.Currencies.FirstOrDefaultAsync(request.Predicate, cancellationToken);
+            var currency = await _context.Currencies
+                .AsNoTracking()
+                .FirstOrDefaultAsync(request.Predicate, cancellationToken);
             return Response.Success(_mapper.Map<CurrencyDto>(currency));
         }
     }

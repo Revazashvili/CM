@@ -33,7 +33,9 @@ namespace Application.Queries.Reports
                     Pin = x.Key,
                     OwnConverts = x.Count(),
                     RelatedPeopleConverts = _context.Converts.Count(g => g.RecommenderPin == x.Key)
-                }).ToListAsync(cancellationToken);
+                })
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
             return Response.Success<IReadOnlyList<PersonConvertNumbersDto>>(result);
         }
     }

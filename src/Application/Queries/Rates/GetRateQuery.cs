@@ -25,6 +25,7 @@ namespace Application.Queries.Rates
             var rate = await _context.Rates
                 .Include(x=>x.From)
                 .Include(x=>x.To)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(request.Predicate, cancellationToken);
             return Response.Success(_mapper.Map<RateDto>(rate));
         }

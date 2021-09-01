@@ -27,6 +27,7 @@ namespace Application.Queries.Rates
             IReadOnlyList<Rate> rates = await _context.Rates
                 .Include(x=>x.From)
                 .Include(x=>x.To)
+                .AsNoTracking()
                 .ToListAsync(cancellationToken);
             var rateDtos = _mapper.Map<IReadOnlyList<RateDto>>(rates);
             return Response.Success(rateDtos);
