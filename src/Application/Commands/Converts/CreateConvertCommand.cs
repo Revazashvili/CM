@@ -21,7 +21,6 @@ namespace Application.Commands.Converts
         private readonly double _hierarchyConvertLimit;
         private readonly IApplicationDbContext _context;
         private readonly IUserService _userService;
-
         public CreateConvertCommandHandler(IApplicationDbContext context, IUserService userService,
             IConfiguration configuration)
         {

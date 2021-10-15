@@ -1,17 +1,9 @@
-using System;
-using System.IO;
-using System.Net;
-using System.Reflection;
-using System.Text.Json;
 using API.Extensions;
 using Application;
-using Application.Common.Models;
 using FluentValidation.AspNetCore;
 using Infrastructure;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
